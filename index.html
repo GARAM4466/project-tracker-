@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1d1d1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="프로젝트 트래커">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>프로젝트 트래커</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    padding: 20px;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #1d1d1f;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #6e6e73;
+    margin-bottom: 20px;
+  }
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    flex: 1;
+    min-width: 100px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+  .stat-card .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1d1d1f;
+  }
+  .stat-card .label {
+    font-size: 11px;
+    color: #6e6e73;
+    margin-top: 2px;
+  }
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .project-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+  }
+  .project-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  .project-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .project-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .project-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d1d1f;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-todo     { background: #e5e5ea; color: #6e6e73; }
+  .badge-progress { background: #fff3cd; color: #856404; }
+  .badge-test     { background: #d1ecf1; color: #0c5460; }
+  .badge-done     { background: #d4edda; color: #155724; }
+  .badge-blocked  { background: #f8d7da; color: #721c24; }
+  .version-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #f0f0f5;
+    color: #3a3a4a;
+    white-space: nowrap;
+  }
+  .category-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .cat-webapp   { background: #e3f0ff; color: #0055cc; }
+  .cat-video    { background: #fde8ff; color: #7700aa; }
+  .cat-tool     { background: #e8fff0; color: #006633; }
+  .cat-mcp      { background: #fff3e0; color: #cc6600; }
+  .cat-channel  { background: #fce4ec; color: #b5003a; }
+  .project-desc {
+    font-size: 13px;
+    color: #3a3a3a;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 7px;
+    background: #e5e5ea;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+  .progress-pct {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1d1d1f;
+    min-width: 34px;
+    text-align: right;
+  }
+  .project-footer {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .milestone-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6e6e73;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .milestone-text {
+    font-size: 12px;
+    color: #3a3a3a;
+    white-space: pre-wrap;
+  }
+  .version-history {
+    margin-top: 6px;
+  }
+  .version-history-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6e6e73;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .version-entry {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    color: #3a3a3a;
+    padding: 3px 0;
+  }
+  .version-entry .vtag {
+    font-weight: 700;
+    color: #555;
+    min-width: 50px;
+  }
+  .version-entry .vdate {
+    color: #999;
+    min-width: 80px;
+  }
+  .detail-section {
+    display: none;
+  }
+  .project-card.expanded .detail-section {
+    display: block;
+  }
+  .expand-icon {
+    font-size: 18px;
+    color: #aaa;
+    margin-left: 4px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .project-card.expanded .expand-icon {
+    transform: rotate(180deg);
+  }
+  .add-btn {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px;
+    background: #1d1d1f;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .add-btn:hover { background: #3a3a3a; }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 18px;
+    padding: 24px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+  }
+  .modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+  .modal label { font-size: 12px; font-weight: 600; color: #6e6e73; display: block; margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal select, .modal textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #d2d2d7;
+    border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+    background: #fafafa;
+    font-family: inherit;
+  }
+  .modal textarea { resize: vertical; min-height: 64px; }
+  .modal-btns { display: flex; gap: 8px; margin-top: 18px; }
+  .modal-btns button {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-confirm { background: #1d1d1f; color: #fff; }
+  .btn-cancel  { background: #e5e5ea; color: #1d1d1f; }
+  .update-btn {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid #d2d2d7;
+    background: #fafafa;
+    cursor: pointer;
+    color: #1d1d1f;
+    margin-top: 8px;
+  }
+  .update-btn:hover { background: #e5e5ea; }
+  .last-updated {
+    font-size: 11px;
+    color: #aaa;
+    text-align: right;
+    margin-top: 20px;
+  }
+  .toast {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1d1d1f;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 22px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 200;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .loading-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(245,245,247,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    font-size: 14px;
+    color: #6e6e73;
+  }
+  .loading-mask.show { display: flex; }
+  .err-banner {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .err-banner.show { display: block; }
+  .err-banner button {
+    margin-left: 8px;
+    border: none;
+    background: #721c24;
+    color: #fff;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>🛠 프로젝트 트래커</h1>
+<p class="subtitle" id="subtitleDate"></p>
+
+<div class="err-banner" id="errBanner"></div>
+<div class="stats-row" id="statsRow"></div>
+<div class="projects" id="projectList"></div>
+
+<button class="add-btn" onclick="openAddModal()">+ 새 프로젝트 추가</button>
+<p class="last-updated" id="lastUpdated"></p>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">새 프로젝트 추가</h2>
+    <label>프로젝트 이름</label>
+    <input type="text" id="mName" placeholder="예: 웹앱 이미지 그리드 툴">
+    <label>카테고리</label>
+    <select id="mCategory">
+      <option value="webapp">웹앱</option>
+      <option value="video">영상/AI</option>
+      <option value="tool">툴/스크립트</option>
+      <option value="mcp">MCP/연동</option>
+      <option value="channel">채널/테스트</option>
+    </select>
+    <label>설명</label>
+    <textarea id="mDesc" placeholder="어떤 프로젝트인지 간단히"></textarea>
+    <label>현재 진행도 (%)</label>
+    <input type="number" id="mPct" min="0" max="100" value="0">
+    <label>현재 상태</label>
+    <select id="mStatus">
+      <option value="todo">시작 전</option>
+      <option value="progress">진행 중</option>
+      <option value="test">테스트 중</option>
+      <option value="done">완료</option>
+      <option value="blocked">블로킹</option>
+    </select>
+    <label>현재 버전</label>
+    <input type="text" id="mVersion" placeholder="예: v1.0">
+    <label>현재까지 완성된 것 (마일스톤)</label>
+    <textarea id="mMilestone" placeholder="예: 기본 UI 완성, 이미지 업로드 기능 구현"></textarea>
+    <label>다음 할 일</label>
+    <textarea id="mNext" placeholder="예: 그리드 자르기 로직 수정"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-confirm" onclick="saveProject()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Update Progress Modal -->
+<div class="modal-overlay" id="updateModalOverlay">
+  <div class="modal">
+    <h2>진행도 업데이트</h2>
+    <label>진행도 (%)</label>
+    <input type="number" id="uPct" min="0" max="100">
+    <label>상태</label>
+    <select id="uStatus">
+      <option value="todo">시작 전</option>
+      <option value="progress">진행 중</option>
+      <option value="test">테스트 중</option>
+      <option value="done">완료</option>
+      <option value="blocked">블로킹</option>
+    </select>
+    <label>새 버전</label>
+    <input type="text" id="uVersion" placeholder="예: v1.1">
+    <label>이번에 완성한 것</label>
+    <textarea id="uMilestone" placeholder="예: 그리드 자르기 버그 수정 완료"></textarea>
+    <label>다음 할 일</label>
+    <textarea id="uNext" placeholder="예: 프롬프트 라이브러리 DB 오류 수정"></textarea>
+    <label>변경 내용 메모 (버전 히스토리용)</label>
+    <textarea id="uChangelog" placeholder="예: 이미지 그리드 자르기 로직 전면 교체"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeUpdateModal()">취소</button>
+      <button class="btn-confirm" onclick="saveUpdate()">업데이트</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading-mask" id="loadingMask">불러오는 중…</div>
+
+<script>
+/* ============================================================
+ *  CONFIG - 배포할 때 이 줄만 본인 Worker URL 로 바꾸면 됩니다.
+ * ============================================================ */
+const API_BASE = 'https://project-tracker-api.vodrnls41.workers.dev';
+
+const CACHE_KEY = 'tracker_cache_v1';
+
+const CAT_LABELS = { webapp:'웹앱', video:'영상/AI', tool:'툴/스크립트', mcp:'MCP/연동', channel:'채널/테스트' };
+const CAT_CSS    = { webapp:'cat-webapp', video:'cat-video', tool:'cat-tool', mcp:'cat-mcp', channel:'cat-channel' };
+const STATUS_LABELS = { todo:'시작 전', progress:'진행 중', test:'테스트 중', done:'완료', blocked:'블로킹' };
+const STATUS_CSS    = { todo:'badge-todo', progress:'badge-progress', test:'badge-test', done:'badge-done', blocked:'badge-blocked' };
+const BAR_COLORS = {
+  todo: '#c7c7cc', progress: '#ffc107', test: '#17a2b8', done: '#28a745', blocked: '#dc3545'
+};
+
+let projects = [];
+let editingId = null;
+let updatingId = null;
+
+/* ---------- Utility ---------- */
+function today() { return new Date().toISOString().slice(0,10); }
+function escapeHtml(s) {
+  return (s == null ? '' : String(s))
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function nl2br(s) { return escapeHtml(s).replace(/\n/g, '<br>'); }
+function showLoading(on) { document.getElementById('loadingMask').classList.toggle('show', on); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+function showError(msg, retryFn) {
+  const el = document.getElementById('errBanner');
+  el.innerHTML = escapeHtml(msg) + (retryFn ? ' <button id="retryBtn">다시 시도</button>' : '');
+  el.classList.add('show');
+  if (retryFn) document.getElementById('retryBtn').onclick = () => { hideError(); retryFn(); };
+}
+function hideError() { document.getElementById('errBanner').classList.remove('show'); }
+
+/* ---------- API ---------- */
+async function api(path, opts = {}) {
+  const res = await fetch(API_BASE + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+/* ---------- Load / Render ---------- */
+async function loadProjects() {
+  // Render cache immediately for snappy load
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (cached && Array.isArray(cached.projects)) {
+      projects = cached.projects;
+      render();
+    }
+  } catch (e) { /* ignore */ }
+
+  showLoading(true);
+  try {
+    const data = await api('/projects');
+    projects = data.projects || [];
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ projects, savedAt: Date.now() }));
+    hideError();
+    render();
+  } catch (err) {
+    console.error(err);
+    showError('Notion 에 연결하지 못했습니다: ' + err.message, loadProjects);
+  } finally {
+    showLoading(false);
+  }
+}
+
+function render() {
+  const d = new Date();
+  document.getElementById('subtitleDate').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 기준 · 총 ${projects.length}개 프로젝트`;
+
+  const counts = { todo:0, progress:0, test:0, done:0, blocked:0 };
+  projects.forEach(p => counts[p.status] = (counts[p.status] || 0) + 1);
+  const avgPct = projects.length ? Math.round(projects.reduce((s,p)=>s+(p.pct||0),0)/projects.length) : 0;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="num">${projects.length}</div><div class="label">전체</div></div>
+    <div class="stat-card"><div class="num">${counts.progress + counts.test}</div><div class="label">진행 중</div></div>
+    <div class="stat-card"><div class="num">${counts.done}</div><div class="label">완료</div></div>
+    <div class="stat-card"><div class="num">${avgPct}%</div><div class="label">평균 진행도</div></div>
+  `;
+
+  const container = document.getElementById('projectList');
+  container.innerHTML = '';
+  projects.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.id = `card-${p.id}`;
+
+    const history = Array.isArray(p.history) && p.history.length ? p.history :
+      [{ v: p.version, date: p.createdAt || today(), note: '' }];
+    const latestDate = history[history.length-1]?.date || p.createdAt || '';
+    const historyHTML = history.slice().reverse().map(h => `
+      <div class="version-entry">
+        <span class="vtag">${escapeHtml(h.v)}</span>
+        <span class="vdate">${escapeHtml(h.date)}</span>
+        <span>${escapeHtml(h.note)}</span>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="project-header" data-toggle="${p.id}">
+        <div>
+          <div class="project-title-row">
+            <span class="project-title">${escapeHtml(p.name)}</span>
+            <span class="badge ${STATUS_CSS[p.status] || 'badge-todo'}">${STATUS_LABELS[p.status] || p.status}</span>
+            <span class="version-tag">${escapeHtml(p.version)} · ${escapeHtml(latestDate)}</span>
+            <span class="category-tag ${CAT_CSS[p.category] || ''}">${CAT_LABELS[p.category] || p.category}</span>
+          </div>
+        </div>
+        <span class="expand-icon">▾</span>
+      </div>
+      <div class="progress-row">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" style="width:${p.pct||0}%;background:${BAR_COLORS[p.status] || '#c7c7cc'}"></div>
+        </div>
+        <span class="progress-pct">${p.pct||0}%</span>
+      </div>
+      <div class="detail-section">
+        <div class="project-footer">
+          <div>
+            <div class="milestone-label">설명</div>
+            <div class="milestone-text">${nl2br(p.desc)}</div>
+          </div>
+          <div>
+            <div class="milestone-label">현재까지 완성된 것</div>
+            <div class="milestone-text">${nl2br(p.milestone)}</div>
+          </div>
+          <div>
+            <div class="milestone-label">다음 할 일</div>
+            <div class="milestone-text">${nl2br(p.next)}</div>
+          </div>
+          <div class="version-history">
+            <div class="version-history-title">버전 히스토리</div>
+            ${historyHTML}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+            <button class="update-btn" data-action="update" data-id="${p.id}">📈 진행도 업데이트</button>
+            <button class="update-btn" data-action="edit" data-id="${p.id}">✏️ 편집</button>
+            <button class="update-btn" style="color:#dc3545" data-action="delete" data-id="${p.id}">🗑 삭제</button>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${today()}`;
+}
+
+/* ---------- Event delegation ---------- */
+document.getElementById('projectList').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (btn) {
+    e.stopPropagation();
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'update') openUpdateModal(id);
+    else if (btn.dataset.action === 'edit') openEditModal(id);
+    else if (btn.dataset.action === 'delete') deleteProject(id);
+    return;
+  }
+  const header = e.target.closest('[data-toggle]');
+  if (header) toggleCard(header.dataset.toggle);
+});
+
+function toggleCard(id) {
+  const card = document.getElementById(`card-${id}`);
+  if (card) card.classList.toggle('expanded');
+}
+
+/* ---------- Add modal ---------- */
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '새 프로젝트 추가';
+  document.getElementById('mName').value = '';
+  document.getElementById('mCategory').value = 'webapp';
+  document.getElementById('mDesc').value = '';
+  document.getElementById('mPct').value = 0;
+  document.getElementById('mStatus').value = 'todo';
+  document.getElementById('mVersion').value = 'v0.1';
+  document.getElementById('mMilestone').value = '';
+  document.getElementById('mNext').value = '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openEditModal(id) {
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '프로젝트 편집';
+  document.getElementById('mName').value = p.name || '';
+  document.getElementById('mCategory').value = p.category || 'webapp';
+  document.getElementById('mDesc').value = p.desc || '';
+  document.getElementById('mPct').value = p.pct || 0;
+  document.getElementById('mStatus').value = p.status || 'todo';
+  document.getElementById('mVersion').value = p.version || '';
+  document.getElementById('mMilestone').value = p.milestone || '';
+  document.getElementById('mNext').value = p.next || '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function saveProject() {
+  const name = document.getElementById('mName').value.trim();
+  if (!name) return alert('프로젝트 이름을 입력해주세요.');
+  const payload = {
+    name,
+    category: document.getElementById('mCategory').value,
+    desc: document.getElementById('mDesc').value.trim(),
+    pct: parseInt(document.getElementById('mPct').value) || 0,
+    status: document.getElementById('mStatus').value,
+    version: document.getElementById('mVersion').value.trim() || 'v0.1',
+    milestone: document.getElementById('mMilestone').value.trim(),
+    next: document.getElementById('mNext').value.trim(),
+  };
+
+  showLoading(true);
+  try {
+    if (editingId !== null) {
+      await api(`/projects/${encodeURIComponent(editingId)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      });
+      toast('저장됨');
+    } else {
+      payload.createdAt = today();
+      payload.order = (projects.reduce((m,p) => Math.max(m, p.order||0), 0) || projects.length) + 1;
+      await api('/projects', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      toast('추가됨');
+    }
+    closeModal();
+    await loadProjects();
+  } catch (err) {
+    alert('저장 실패: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+/* ---------- Update modal ---------- */
+function openUpdateModal(id) {
+  updatingId = id;
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('uPct').value = p.pct || 0;
+  document.getElementById('uStatus').value = p.status || 'todo';
+  document.getElementById('uVersion').value = p.version || '';
+  document.getElementById('uMilestone').value = p.milestone || '';
+  document.getElementById('uNext').value = p.next || '';
+  document.getElementById('uChangelog').value = '';
+  document.getElementById('updateModalOverlay').classList.add('open');
+}
+
+function closeUpdateModal() {
+  document.getElementById('updateModalOverlay').classList.remove('open');
+}
+
+async function saveUpdate() {
+  const p = projects.find(x => x.id === updatingId);
+  if (!p) return;
+  const newPct = parseInt(document.getElementById('uPct').value) || 0;
+  const newStatus = document.getElementById('uStatus').value;
+  const newVersion = document.getElementById('uVersion').value.trim() || p.version;
+  const newMilestone = document.getElementById('uMilestone').value.trim();
+  const newNext = document.getElementById('uNext').value.trim();
+  const changelog = document.getElementById('uChangelog').value.trim()
+    || (newVersion !== p.version ? `${p.version} → ${newVersion} 업데이트` : '');
+
+  const patch = {
+    pct: newPct,
+    status: newStatus,
+    version: newVersion,
+    milestone: newMilestone || p.milestone,
+    next: newNext || p.next,
+  };
+
+  showLoading(true);
+  try {
+    await api(`/projects/${encodeURIComponent(updatingId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    });
+    if (changelog) {
+      await api('/history', {
+        method: 'POST',
+        body: JSON.stringify({
+          projectId: updatingId,
+          version: newVersion,
+          date: today(),
+          note: changelog,
+        }),
+      });
+    }
+    toast('업데이트 완료');
+    closeUpdateModal();
+    await loadProjects();
+    setTimeout(() => {
+      const card = document.getElementById(`card-${updatingId}`);
+      if (card) card.classList.add('expanded');
+    }, 50);
+  } catch (err) {
+    alert('업데이트 실패: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+/* ---------- Delete ---------- */
+async function deleteProject(id) {
+  if (!confirm('이 프로젝트를 삭제할까요? (Notion 에서 보관 처리됩니다)')) return;
+  showLoading(true);
+  try {
+    await api(`/projects/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    toast('삭제됨');
+    await loadProjects();
+  } catch (err) {
+    alert('삭제 실패: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+/* ---------- Modal background close ---------- */
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => {
+    if (e.target === ov) ov.classList.remove('open');
+  });
+});
+
+/* ---------- Service worker for PWA ---------- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+/* ---------- Boot ---------- */
+loadProjects();
+</script>
+</body>
+</html>
