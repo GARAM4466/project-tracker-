@@ -1077,8 +1077,21 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
 
 /* ---------- Service worker for PWA ---------- */
 if ('serviceWorker' in navigator) {
+  let reloading = false;
+  // 새 SW 가 활성화되면(controllerchange) 페이지 자동 새로고침 (한 번만)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // 1시간마다, 그리고 페이지 포커스 받을 때 SW 업데이트 체크
+      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    }).catch(() => {});
   });
 }
 
