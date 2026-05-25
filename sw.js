@@ -5,7 +5,7 @@
  *  - 새 버전 SW가 설치되면 즉시 활성화 → 옛 캐시 자동 폐기
  */
 
-const CACHE = 'tracker-shell-v3';
+const CACHE = 'tracker-shell-v4';
 const SHELL_FILES = [
   './',
   './index.html',

@@ -11,26 +11,94 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>프로젝트 트래커</title>
 <style>
-  :root { color-scheme: light; }
+  :root {
+    color-scheme: light;
+    /* === Light theme tokens === */
+    --bg: #f5f5f7;
+    --text: #1d1d1f;
+    --text-soft: #3a3a3a;
+    --text-muted: #6e6e73;
+    --text-faint: #aaa;
+    --surface: #fff;
+    --surface-soft: #fafafa;
+    --surface-alt: #f5f5f7;
+    --surface-chip: #f0f0f5;
+    --border: #e5e5ea;
+    --border-soft: #f0f0f0;
+    --border-input: #d2d2d7;
+    --accent: #1d1d1f;
+    --accent-text: #fff;
+    --track: #e5e5ea;
+    --shadow-card: 0 1px 4px rgba(0,0,0,0.08);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-btn: 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-modal: 0 8px 40px rgba(0,0,0,0.18);
+    --overlay-bg: rgba(0,0,0,0.35);
+    --loading-bg: rgba(245,245,247,0.7);
+    --version-tag-bg: #f0f0f5;
+    --version-tag-text: #3a3a4a;
+    --err-bg: #f8d7da;
+    --err-text: #721c24;
+  }
+  body.dark {
+    color-scheme: dark;
+    --bg: #000000;
+    --text: #f5f5f7;
+    --text-soft: #d1d1d6;
+    --text-muted: #8e8e93;
+    --text-faint: #636366;
+    --surface: #1c1c1e;
+    --surface-soft: #2c2c2e;
+    --surface-alt: #1c1c1e;
+    --surface-chip: #2c2c2e;
+    --border: #38383a;
+    --border-soft: #2c2c2e;
+    --border-input: #48484a;
+    --accent: #f5f5f7;
+    --accent-text: #1d1d1f;
+    --track: #38383a;
+    --shadow-card: 0 1px 4px rgba(0,0,0,0.4);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.6);
+    --shadow-btn: 0 1px 4px rgba(0,0,0,0.3);
+    --shadow-modal: 0 8px 40px rgba(0,0,0,0.7);
+    --overlay-bg: rgba(0,0,0,0.65);
+    --loading-bg: rgba(0,0,0,0.6);
+    --version-tag-bg: #2c2c2e;
+    --version-tag-text: #d1d1d6;
+    --err-bg: #4a1d22;
+    --err-text: #ffb3b9;
+  }
+  body.dark .badge-todo     { background: #3a3a3c; color: #d1d1d6; }
+  body.dark .badge-progress { background: #4a3d10; color: #ffd54f; }
+  body.dark .badge-test     { background: #0e3a44; color: #6ed3e3; }
+  body.dark .badge-done     { background: #103a1c; color: #74d987; }
+  body.dark .badge-blocked  { background: #4a181f; color: #ff8a95; }
+  body.dark .cat-webapp   { background: #0d2545; color: #8fb8ff; }
+  body.dark .cat-video    { background: #3a0d44; color: #e088ff; }
+  body.dark .cat-tool     { background: #0e3520; color: #7adb9c; }
+  body.dark .cat-mcp      { background: #3d2308; color: #ffb070; }
+  body.dark .cat-channel  { background: #3e0e22; color: #ff8ab1; }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f5f5f7;
-    color: #1d1d1f;
+    background: var(--bg);
+    color: var(--text);
     padding: 20px;
     padding-top: max(20px, env(safe-area-inset-top));
     padding-bottom: max(20px, env(safe-area-inset-bottom));
     min-height: 100vh;
+    transition: background-color 0.2s, color 0.2s;
   }
   h1 {
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 4px;
-    color: #1d1d1f;
+    color: var(--text);
   }
   .subtitle {
     font-size: 13px;
-    color: #6e6e73;
+    color: var(--text-muted);
     margin-bottom: 20px;
   }
   .header-row {
@@ -39,19 +107,43 @@
     align-items: flex-start;
     gap: 10px;
   }
-  .chart-btn {
-    background: #fff;
-    border: 1px solid #e5e5ea;
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 12px;
     width: 40px;
     height: 40px;
     font-size: 18px;
     cursor: pointer;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    box-shadow: var(--shadow-btn);
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--text);
+    transition: transform 0.1s, background-color 0.2s;
+  }
+  .icon-btn:active { transform: scale(0.95); }
+  /* 기존 코드 호환용 — 같은 스타일을 .chart-btn 에도 그대로 적용 */
+  .chart-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: var(--shadow-btn);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
   }
   .chart-btn:active { transform: scale(0.95); }
 
@@ -73,18 +165,18 @@
     border-radius: 16px;
     font-size: 12px;
     font-weight: 600;
-    background: #fff;
-    color: #3a3a3a;
-    border: 1px solid #e5e5ea;
+    background: var(--surface);
+    color: var(--text-soft);
+    border: 1px solid var(--border);
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.12s;
   }
   .filter-chip:active { transform: scale(0.96); }
   .filter-chip.active {
-    background: #1d1d1f;
-    color: #fff;
-    border-color: #1d1d1f;
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
   }
   .filter-chip .count {
     margin-left: 4px;
@@ -92,10 +184,54 @@
     opacity: 0.7;
   }
 
+  /* 검색/정렬 한 줄 (필터 칩 옆) */
+  .tools-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1 1 160px;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, background-color 0.2s;
+  }
+  .search-input::placeholder { color: var(--text-faint); }
+  .search-input:focus { border-color: var(--accent); }
+  .sort-select {
+    flex-shrink: 0;
+    padding: 8px 28px 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%236e6e73' d='M0 0l5 6 5-6z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 9px 5px;
+    transition: border-color 0.15s, background-color 0.2s;
+  }
+
   .empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: #aaa;
+    color: var(--text-faint);
     font-size: 13px;
   }
 
@@ -108,7 +244,7 @@
     margin-bottom: 18px;
   }
   .stats-card {
-    background: #f5f5f7;
+    background: var(--surface-alt);
     border-radius: 12px;
     padding: 14px;
     text-align: center;
@@ -116,18 +252,18 @@
   .stats-card .num {
     font-size: 26px;
     font-weight: 700;
-    color: #1d1d1f;
+    color: var(--text);
     line-height: 1.1;
   }
   .stats-card .label {
     font-size: 11px;
-    color: #6e6e73;
+    color: var(--text-muted);
     margin-top: 4px;
   }
   .stats-section-title {
     font-size: 11px;
     font-weight: 700;
-    color: #6e6e73;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin: 16px 0 8px;
@@ -141,13 +277,13 @@
   }
   .dist-label {
     width: 70px;
-    color: #3a3a3a;
+    color: var(--text-soft);
     flex-shrink: 0;
   }
   .dist-bar-bg {
     flex: 1;
     height: 18px;
-    background: #f0f0f5;
+    background: var(--surface-chip);
     border-radius: 9px;
     overflow: hidden;
     position: relative;
@@ -160,7 +296,7 @@
   .dist-count {
     width: 32px;
     text-align: right;
-    color: #6e6e73;
+    color: var(--text-muted);
     font-weight: 600;
     flex-shrink: 0;
   }
@@ -170,15 +306,15 @@
     gap: 12px;
   }
   .project-card {
-    background: #fff;
+    background: var(--surface);
     border-radius: 14px;
     padding: 16px 18px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    box-shadow: var(--shadow-card);
     cursor: pointer;
-    transition: box-shadow 0.15s;
+    transition: box-shadow 0.15s, background-color 0.2s;
   }
   .project-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    box-shadow: var(--shadow-card-hover);
   }
   .project-header {
     display: flex;
@@ -196,7 +332,7 @@
   .project-title {
     font-size: 15px;
     font-weight: 600;
-    color: #1d1d1f;
+    color: var(--text);
   }
   .badge {
     font-size: 11px;
@@ -215,8 +351,8 @@
     font-weight: 600;
     padding: 2px 8px;
     border-radius: 20px;
-    background: #f0f0f5;
-    color: #3a3a4a;
+    background: var(--version-tag-bg);
+    color: var(--version-tag-text);
     white-space: nowrap;
   }
   .category-tag {
@@ -233,7 +369,7 @@
   .cat-channel  { background: #fce4ec; color: #b5003a; }
   .project-desc {
     font-size: 13px;
-    color: #3a3a3a;
+    color: var(--text-soft);
     margin-bottom: 10px;
     line-height: 1.5;
   }
@@ -245,7 +381,7 @@
   .progress-bar-bg {
     flex: 1;
     height: 7px;
-    background: #e5e5ea;
+    background: var(--track);
     border-radius: 10px;
     overflow: hidden;
   }
@@ -257,14 +393,14 @@
   .progress-pct {
     font-size: 13px;
     font-weight: 700;
-    color: #1d1d1f;
+    color: var(--text);
     min-width: 34px;
     text-align: right;
   }
   .project-footer {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--border-soft);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -272,13 +408,13 @@
   .milestone-label {
     font-size: 11px;
     font-weight: 600;
-    color: #6e6e73;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
   .milestone-text {
     font-size: 12px;
-    color: #3a3a3a;
+    color: var(--text-soft);
     white-space: pre-wrap;
   }
   .version-history {
@@ -287,7 +423,7 @@
   .version-history-title {
     font-size: 11px;
     font-weight: 600;
-    color: #6e6e73;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
@@ -296,16 +432,16 @@
     display: flex;
     gap: 8px;
     font-size: 12px;
-    color: #3a3a3a;
+    color: var(--text-soft);
     padding: 3px 0;
   }
   .version-entry .vtag {
     font-weight: 700;
-    color: #555;
+    color: var(--text-muted);
     min-width: 50px;
   }
   .version-entry .vdate {
-    color: #999;
+    color: var(--text-faint);
     min-width: 80px;
   }
   .detail-section {
@@ -316,7 +452,7 @@
   }
   .expand-icon {
     font-size: 18px;
-    color: #aaa;
+    color: var(--text-faint);
     margin-left: 4px;
     flex-shrink: 0;
     transition: transform 0.2s;
@@ -329,21 +465,21 @@
     width: 100%;
     margin-top: 16px;
     padding: 13px;
-    background: #1d1d1f;
-    color: #fff;
+    background: var(--accent);
+    color: var(--accent-text);
     border: none;
     border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: opacity 0.15s;
   }
-  .add-btn:hover { background: #3a3a3a; }
+  .add-btn:hover { opacity: 0.85; }
   .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.35);
+    background: var(--overlay-bg);
     z-index: 100;
     align-items: center;
     justify-content: center;
@@ -352,25 +488,27 @@
   }
   .modal-overlay.open { display: flex; }
   .modal {
-    background: #fff;
+    background: var(--surface);
     border-radius: 18px;
     padding: 24px;
     width: 100%;
     max-width: 460px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    box-shadow: var(--shadow-modal);
     max-height: calc(100vh - 32px);
     overflow-y: auto;
+    color: var(--text);
   }
   .modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
-  .modal label { font-size: 12px; font-weight: 600; color: #6e6e73; display: block; margin-bottom: 4px; margin-top: 12px; }
+  .modal label { font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px; margin-top: 12px; }
   .modal input, .modal select, .modal textarea {
     width: 100%;
     padding: 9px 12px;
-    border: 1px solid #d2d2d7;
+    border: 1px solid var(--border-input);
     border-radius: 9px;
     font-size: 14px;
     outline: none;
-    background: #fafafa;
+    background: var(--surface-soft);
+    color: var(--text);
     font-family: inherit;
   }
   .modal textarea { resize: vertical; min-height: 64px; }
@@ -384,23 +522,23 @@
     font-weight: 600;
     cursor: pointer;
   }
-  .btn-confirm { background: #1d1d1f; color: #fff; }
-  .btn-cancel  { background: #e5e5ea; color: #1d1d1f; }
+  .btn-confirm { background: var(--accent); color: var(--accent-text); }
+  .btn-cancel  { background: var(--border); color: var(--text); }
   .update-btn {
     font-size: 11px;
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 8px;
-    border: 1px solid #d2d2d7;
-    background: #fafafa;
+    border: 1px solid var(--border-input);
+    background: var(--surface-soft);
     cursor: pointer;
-    color: #1d1d1f;
+    color: var(--text);
     margin-top: 8px;
   }
-  .update-btn:hover { background: #e5e5ea; }
+  .update-btn:hover { background: var(--border); }
   .last-updated {
     font-size: 11px;
-    color: #aaa;
+    color: var(--text-faint);
     text-align: right;
     margin-top: 20px;
   }
@@ -409,8 +547,8 @@
     bottom: max(20px, env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: #1d1d1f;
-    color: #fff;
+    background: var(--accent);
+    color: var(--accent-text);
     padding: 10px 18px;
     border-radius: 22px;
     font-size: 13px;
@@ -428,18 +566,18 @@
   .loading-mask {
     position: fixed;
     inset: 0;
-    background: rgba(245,245,247,0.7);
+    background: var(--loading-bg);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 150;
     font-size: 14px;
-    color: #6e6e73;
+    color: var(--text-muted);
   }
   .loading-mask.show { display: flex; }
   .err-banner {
-    background: #f8d7da;
-    color: #721c24;
+    background: var(--err-bg);
+    color: var(--err-text);
     padding: 10px 14px;
     border-radius: 10px;
     font-size: 12px;
@@ -450,8 +588,8 @@
   .err-banner button {
     margin-left: 8px;
     border: none;
-    background: #721c24;
-    color: #fff;
+    background: var(--err-text);
+    color: var(--err-bg);
     padding: 3px 9px;
     border-radius: 6px;
     font-size: 11px;
@@ -466,7 +604,10 @@
     <h1>🛠 프로젝트 트래커</h1>
     <p class="subtitle" id="subtitleDate"></p>
   </div>
-  <button class="chart-btn" id="chartBtn" title="통계 보기" aria-label="통계 보기">📊</button>
+  <div class="header-actions">
+    <button class="icon-btn" id="themeBtn" title="다크모드 토글" aria-label="다크모드 토글">🌙</button>
+    <button class="icon-btn chart-btn" id="chartBtn" title="통계 보기" aria-label="통계 보기">📊</button>
+  </div>
 </div>
 
 <div class="err-banner" id="errBanner"></div>
@@ -474,6 +615,15 @@
 <div class="filter-section">
   <div class="filter-row" id="statusFilters"></div>
   <div class="filter-row" id="categoryFilters"></div>
+  <div class="tools-row">
+    <input type="search" id="searchInput" class="search-input" placeholder="🔍 프로젝트 이름 검색…" autocomplete="off">
+    <select id="sortSelect" class="sort-select" aria-label="정렬 순서">
+      <option value="default">기본 순서</option>
+      <option value="progress-desc">진행도 높은 순</option>
+      <option value="progress-asc">진행도 낮은 순</option>
+      <option value="recent">최근 업데이트 순</option>
+    </select>
+  </div>
 </div>
 
 <div class="projects" id="projectList"></div>
@@ -575,6 +725,7 @@ const API_BASE = 'https://project-tracker-api.vodrnls41.workers.dev';
 
 const CACHE_KEY = 'tracker_cache_v1';
 const FILTER_KEY = 'tracker_filter_v1';
+const THEME_KEY  = 'tracker_theme_v1';   // 'light' | 'dark'
 
 const CAT_LABELS = { webapp:'웹앱', video:'영상/AI', tool:'툴/스크립트', mcp:'MCP/연동', channel:'채널/테스트' };
 const CAT_CSS    = { webapp:'cat-webapp', video:'cat-video', tool:'cat-tool', mcp:'cat-mcp', channel:'cat-channel' };
@@ -589,31 +740,100 @@ let editingId = null;
 let updatingId = null;
 
 // 필터 상태 (localStorage 에서 복원)
+const SORT_OPTIONS = new Set(['default', 'progress-desc', 'progress-asc', 'recent']);
 let filterState = (function() {
   try {
     const saved = JSON.parse(localStorage.getItem(FILTER_KEY) || 'null');
     if (saved && typeof saved === 'object') {
-      return { status: saved.status || 'all', category: saved.category || 'all' };
+      return {
+        status:   saved.status   || 'all',
+        category: saved.category || 'all',
+        search:   typeof saved.search === 'string' ? saved.search : '',
+        sort:     SORT_OPTIONS.has(saved.sort) ? saved.sort : 'default',
+      };
     }
   } catch(e) {}
-  return { status: 'all', category: 'all' };
+  return { status: 'all', category: 'all', search: '', sort: 'default' };
 })();
 
 function saveFilterState() {
   localStorage.setItem(FILTER_KEY, JSON.stringify(filterState));
 }
 
+// 마지막 업데이트 날짜(YYYY-MM-DD) 뽑기 — 최근 정렬용
+function lastUpdatedDate(p) {
+  if (Array.isArray(p.history) && p.history.length) {
+    // history 안에서 가장 큰 date 사용 (보통 마지막이지만 안전하게)
+    let max = '';
+    for (const h of p.history) {
+      if (h && typeof h.date === 'string' && h.date > max) max = h.date;
+    }
+    if (max) return max;
+  }
+  return p.createdAt || '';
+}
+
 function getFilteredProjects() {
-  return projects.filter(p => {
+  const q = (filterState.search || '').trim().toLowerCase();
+
+  // 1) 필터링: status + category + 이름 검색
+  const filtered = projects.filter(p => {
     if (filterState.status !== 'all') {
       if (filterState.status === 'active') {
         if (p.status !== 'progress' && p.status !== 'test') return false;
       } else if (p.status !== filterState.status) return false;
     }
     if (filterState.category !== 'all' && p.category !== filterState.category) return false;
+    if (q) {
+      const name = (p.name || '').toLowerCase();
+      if (!name.includes(q)) return false;
+    }
     return true;
   });
+
+  // 2) 정렬
+  if (filterState.sort === 'default') return filtered;
+
+  const copy = filtered.slice();
+  if (filterState.sort === 'progress-desc') {
+    copy.sort((a,b) => (b.pct||0) - (a.pct||0));
+  } else if (filterState.sort === 'progress-asc') {
+    copy.sort((a,b) => (a.pct||0) - (b.pct||0));
+  } else if (filterState.sort === 'recent') {
+    copy.sort((a,b) => {
+      const da = lastUpdatedDate(a);
+      const db = lastUpdatedDate(b);
+      if (da === db) return 0;
+      return da < db ? 1 : -1;   // 내림차순 (최근이 위)
+    });
+  }
+  return copy;
 }
+
+/* ---------- Theme (dark mode) ---------- */
+function applyTheme(theme) {
+  const isDark = theme === 'dark';
+  document.body.classList.toggle('dark', isDark);
+  const themeBtn = document.getElementById('themeBtn');
+  if (themeBtn) {
+    themeBtn.textContent = isDark ? '☀️' : '🌙';
+    themeBtn.setAttribute('aria-label', isDark ? '라이트모드로 전환' : '다크모드로 전환');
+    themeBtn.title = isDark ? '라이트모드로 전환' : '다크모드로 전환';
+  }
+  // theme-color 메타도 따라가게 (PWA 상태바 색)
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute('content', isDark ? '#000000' : '#f5f5f7');
+}
+function currentTheme() {
+  return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+}
+function toggleTheme() {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+// 첫 로딩 시 적용 (DOM 보다 먼저 body 클래스 잡기 위해 즉시 실행)
+applyTheme(currentTheme());
 
 /* ---------- Utility ---------- */
 function today() { return new Date().toISOString().slice(0,10); }
@@ -735,7 +955,10 @@ function render() {
   container.innerHTML = '';
 
   if (filtered.length === 0) {
-    container.innerHTML = `<div class="empty-state">조건에 맞는 프로젝트가 없어요.<br>필터를 조정해보세요.</div>`;
+    const msg = (filterState.search && filterState.search.trim())
+      ? `"${escapeHtml(filterState.search.trim())}" 에 해당하는 프로젝트가 없어요.<br>다른 키워드로 검색해보세요.`
+      : `조건에 맞는 프로젝트가 없어요.<br>필터를 조정해보세요.`;
+    container.innerHTML = `<div class="empty-state">${msg}</div>`;
     document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${today()}`;
     return;
   }
@@ -822,6 +1045,33 @@ document.getElementById('categoryFilters').addEventListener('click', handleFilte
 
 /* ---------- Chart button ---------- */
 document.getElementById('chartBtn').addEventListener('click', openStatsModal);
+
+/* ---------- Theme button ---------- */
+document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+
+/* ---------- Search + Sort ---------- */
+(function initToolsRow() {
+  const searchEl = document.getElementById('searchInput');
+  const sortEl   = document.getElementById('sortSelect');
+  // 복원
+  searchEl.value = filterState.search || '';
+  sortEl.value   = filterState.sort || 'default';
+  // 검색은 디바운스 (입력할 때마다 매번 render 하면 카드 깜빡임)
+  let searchTimer = null;
+  searchEl.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      filterState.search = searchEl.value;
+      saveFilterState();
+      render();
+    }, 120);
+  });
+  sortEl.addEventListener('change', () => {
+    filterState.sort = SORT_OPTIONS.has(sortEl.value) ? sortEl.value : 'default';
+    saveFilterState();
+    render();
+  });
+})();
 
 /* ---------- Event delegation ---------- */
 document.getElementById('projectList').addEventListener('click', e => {
