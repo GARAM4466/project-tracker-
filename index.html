@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1d1d1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="프로젝트 트래커">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>프로젝트 트래커</title>
+<style>
+  :root {
+    color-scheme: light;
+    /* === Light theme tokens === */
+    --bg: #f5f5f7;
+    --text: #1d1d1f;
+    --text-soft: #3a3a3a;
+    --text-muted: #6e6e73;
+    --text-faint: #aaa;
+    --surface: #fff;
+    --surface-soft: #fafafa;
+    --surface-alt: #f5f5f7;
+    --surface-chip: #f0f0f5;
+    --border: #e5e5ea;
+    --border-soft: #f0f0f0;
+    --border-input: #d2d2d7;
+    --accent: #1d1d1f;
+    --accent-text: #fff;
+    --track: #e5e5ea;
+    --shadow-card: 0 1px 4px rgba(0,0,0,0.08);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-btn: 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-modal: 0 8px 40px rgba(0,0,0,0.18);
+    --overlay-bg: rgba(0,0,0,0.35);
+    --loading-bg: rgba(245,245,247,0.7);
+    --version-tag-bg: #f0f0f5;
+    --version-tag-text: #3a3a4a;
+    --err-bg: #f8d7da;
+    --err-text: #721c24;
+  }
+  body.dark {
+    color-scheme: dark;
+    --bg: #000000;
+    --text: #f5f5f7;
+    --text-soft: #d1d1d6;
+    --text-muted: #8e8e93;
+    --text-faint: #636366;
+    --surface: #1c1c1e;
+    --surface-soft: #2c2c2e;
+    --surface-alt: #1c1c1e;
+    --surface-chip: #2c2c2e;
+    --border: #38383a;
+    --border-soft: #2c2c2e;
+    --border-input: #48484a;
+    --accent: #f5f5f7;
+    --accent-text: #1d1d1f;
+    --track: #38383a;
+    --shadow-card: 0 1px 4px rgba(0,0,0,0.4);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.6);
+    --shadow-btn: 0 1px 4px rgba(0,0,0,0.3);
+    --shadow-modal: 0 8px 40px rgba(0,0,0,0.7);
+    --overlay-bg: rgba(0,0,0,0.65);
+    --loading-bg: rgba(0,0,0,0.6);
+    --version-tag-bg: #2c2c2e;
+    --version-tag-text: #d1d1d6;
+    --err-bg: #4a1d22;
+    --err-text: #ffb3b9;
+  }
+  body.dark .badge-todo     { background: #3a3a3c; color: #d1d1d6; }
+  body.dark .badge-progress { background: #4a3d10; color: #ffd54f; }
+  body.dark .badge-test     { background: #0e3a44; color: #6ed3e3; }
+  body.dark .badge-done     { background: #103a1c; color: #74d987; }
+  body.dark .badge-blocked  { background: #4a181f; color: #ff8a95; }
+  body.dark .cat-webapp   { background: #0d2545; color: #8fb8ff; }
+  body.dark .cat-video    { background: #3a0d44; color: #e088ff; }
+  body.dark .cat-tool     { background: #0e3520; color: #7adb9c; }
+  body.dark .cat-mcp      { background: #3d2308; color: #ffb070; }
+  body.dark .cat-channel  { background: #3e0e22; color: #ff8ab1; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    min-height: 100vh;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: var(--shadow-btn);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    transition: transform 0.1s, background-color 0.2s;
+  }
+  .icon-btn:active { transform: scale(0.95); }
+  /* 기존 코드 호환용 — 같은 스타일을 .chart-btn 에도 그대로 적용 */
+  .chart-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: var(--shadow-btn);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+  }
+  .chart-btn:active { transform: scale(0.95); }
+
+  .filter-section {
+    margin-bottom: 14px;
+  }
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 0 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface);
+    color: var(--text-soft);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.12s;
+  }
+  .filter-chip:active { transform: scale(0.96); }
+  .filter-chip.active {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+  .filter-chip .count {
+    margin-left: 4px;
+    font-weight: 500;
+    opacity: 0.7;
+  }
+
+  /* 검색/정렬 한 줄 (필터 칩 옆) */
+  .tools-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1 1 160px;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, background-color 0.2s;
+  }
+  .search-input::placeholder { color: var(--text-faint); }
+  .search-input:focus { border-color: var(--accent); }
+  .sort-select {
+    flex-shrink: 0;
+    padding: 8px 28px 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%236e6e73' d='M0 0l5 6 5-6z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 9px 5px;
+    transition: border-color 0.15s, background-color 0.2s;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-faint);
+    font-size: 13px;
+  }
+
+  /* 통계 모달 전용 */
+  .stats-modal { max-width: 460px; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .stats-card {
+    background: var(--surface-alt);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stats-card .num {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .stats-card .label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .stats-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 16px 0 8px;
+  }
+  .dist-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .dist-label {
+    width: 70px;
+    color: var(--text-soft);
+    flex-shrink: 0;
+  }
+  .dist-bar-bg {
+    flex: 1;
+    height: 18px;
+    background: var(--surface-chip);
+    border-radius: 9px;
+    overflow: hidden;
+    position: relative;
+  }
+  .dist-bar-fill {
+    height: 100%;
+    border-radius: 9px;
+    transition: width 0.4s ease;
+  }
+  .dist-count {
+    width: 32px;
+    text-align: right;
+    color: var(--text-muted);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .project-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+    transition: box-shadow 0.15s, background-color 0.2s;
+  }
+  .project-card:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  .project-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .project-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .project-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-todo     { background: #e5e5ea; color: #6e6e73; }
+  .badge-progress { background: #fff3cd; color: #856404; }
+  .badge-test     { background: #d1ecf1; color: #0c5460; }
+  .badge-done     { background: #d4edda; color: #155724; }
+  .badge-blocked  { background: #f8d7da; color: #721c24; }
+  .version-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--version-tag-bg);
+    color: var(--version-tag-text);
+    white-space: nowrap;
+  }
+  .category-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .cat-webapp   { background: #e3f0ff; color: #0055cc; }
+  .cat-video    { background: #fde8ff; color: #7700aa; }
+  .cat-tool     { background: #e8fff0; color: #006633; }
+  .cat-mcp      { background: #fff3e0; color: #cc6600; }
+  .cat-channel  { background: #fce4ec; color: #b5003a; }
+  .project-desc {
+    font-size: 13px;
+    color: var(--text-soft);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 7px;
+    background: var(--track);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+  .progress-pct {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 34px;
+    text-align: right;
+  }
+  .project-footer {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .milestone-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .milestone-text {
+    font-size: 12px;
+    color: var(--text-soft);
+    white-space: pre-wrap;
+  }
+  .version-history {
+    margin-top: 6px;
+  }
+  .version-history-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .version-entry {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-soft);
+    padding: 3px 0;
+  }
+  .version-entry .vtag {
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 50px;
+  }
+  .version-entry .vdate {
+    color: var(--text-faint);
+    min-width: 80px;
+  }
+  .detail-section {
+    display: none;
+  }
+  .project-card.expanded .detail-section {
+    display: block;
+  }
+  .expand-icon {
+    font-size: 18px;
+    color: var(--text-faint);
+    margin-left: 4px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .project-card.expanded .expand-icon {
+    transform: rotate(180deg);
+  }
+  .add-btn {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .add-btn:hover { opacity: 0.85; }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 24px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: var(--shadow-modal);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    color: var(--text);
+  }
+  .modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+  .modal label { font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal select, .modal textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border-input);
+    border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+    background: var(--surface-soft);
+    color: var(--text);
+    font-family: inherit;
+  }
+  .modal textarea { resize: vertical; min-height: 64px; }
+  .modal-btns { display: flex; gap: 8px; margin-top: 18px; }
+  .modal-btns button {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-confirm { background: var(--accent); color: var(--accent-text); }
+  .btn-cancel  { background: var(--border); color: var(--text); }
+  .update-btn {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-input);
+    background: var(--surface-soft);
+    cursor: pointer;
+    color: var(--text);
+    margin-top: 8px;
+  }
+  .update-btn:hover { background: var(--border); }
+  .last-updated {
+    font-size: 11px;
+    color: var(--text-faint);
+    text-align: right;
+    margin-top: 20px;
+  }
+  .toast {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: var(--accent-text);
+    padding: 10px 18px;
+    border-radius: 22px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 200;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .loading-mask {
+    position: fixed;
+    inset: 0;
+    background: var(--loading-bg);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .loading-mask.show { display: flex; }
+  .err-banner {
+    background: var(--err-bg);
+    color: var(--err-text);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .err-banner.show { display: block; }
+  .err-banner button {
+    margin-left: 8px;
+    border: none;
+    background: var(--err-text);
+    color: var(--err-bg);
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-row">
+  <div>
+    <h1>🛠 프로젝트 트래커</h1>
+    <p class="subtitle" id="subtitleDate"></p>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" id="themeBtn" title="다크모드 토글" aria-label="다크모드 토글">🌙</button>
+    <button class="icon-btn chart-btn" id="chartBtn" title="통계 보기" aria-label="통계 보기">📊</button>
+  </div>
+</div>
+
+<div class="err-banner" id="errBanner"></div>
+
+<div class="filter-section">
+  <div class="filter-row" id="statusFilters"></div>
+  <div class="filter-row" id="categoryFilters"></div>
+  <div class="tools-row">
+    <input type="search" id="searchInput" class="search-input" placeholder="🔍 프로젝트 이름 검색…" autocomplete="off">
+    <select id="sortSelect" class="sort-select" aria-label="정렬 순서">
+      <option value="default">기본 순서</option>
+      <option value="progress-desc">진행도 높은 순</option>
+      <option value="progress-asc">진행도 낮은 순</option>
+      <option value="recent">최근 업데이트 순</option>
+    </select>
+  </div>
+</div>
+
+<div class="projects" id="projectList"></div>
+
+<button class="add-btn" onclick="openAddModal()">+ 새 프로젝트 추가</button>
+<p class="last-updated" id="lastUpdated"></p>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">새 프로젝트 추가</h2>
+    <label>프로젝트 이름</label>
+    <input type="text" id="mName" placeholder="예: 웹앱 이미지 그리드 툴">
+    <label>카테고리</label>
+    <select id="mCategory">
+      <option value="webapp">웹앱</option>
+      <option value="video">영상/AI</option>
+      <option value="tool">툴/스크립트</option>
+      <option value="mcp">MCP/연동</option>
+      <option value="channel">채널/테스트</option>
+    </select>
+    <label>설명</label>
+    <textarea id="mDesc" placeholder="어떤 프로젝트인지 간단히"></textarea>
+    <label>워크스페이스 경로</label>
+    <input type="text" id="mWorkspace" placeholder="예: Google Drive / 내 드라이브 / 툴모음, 또는 로컬 ~/projects/mytool">
+    <label>현재 진행도 (%)</label>
+    <input type="number" id="mPct" min="0" max="100" value="0">
+    <label>현재 상태</label>
+    <select id="mStatus">
+      <option value="todo">시작 전</option>
+      <option value="progress">진행 중</option>
+      <option value="test">테스트 중</option>
+      <option value="done">완료</option>
+      <option value="blocked">블로킹</option>
+    </select>
+    <label>현재 버전</label>
+    <input type="text" id="mVersion" placeholder="예: v1.0">
+    <label>다음 할 일</label>
+    <textarea id="mNext" placeholder="예: 그리드 자르기 로직 수정"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-confirm" onclick="saveProject()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Update Progress Modal -->
+<div class="modal-overlay" id="updateModalOverlay">
+  <div class="modal">
+    <h2>진행도 업데이트</h2>
+    <label>진행도 (%)</label>
+    <input type="number" id="uPct" min="0" max="100">
+    <label>상태</label>
+    <select id="uStatus">
+      <option value="todo">시작 전</option>
+      <option value="progress">진행 중</option>
+      <option value="test">테스트 중</option>
+      <option value="done">완료</option>
+      <option value="blocked">블로킹</option>
+    </select>
+    <label>새 버전</label>
+    <input type="text" id="uVersion" placeholder="예: v1.1">
+    <label>다음 할 일</label>
+    <textarea id="uNext" placeholder="예: 프롬프트 라이브러리 DB 오류 수정"></textarea>
+    <label>변경 내용 메모 (버전 히스토리용)</label>
+    <textarea id="uChangelog" placeholder="예: 이미지 그리드 자르기 로직 전면 교체"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeUpdateModal()">취소</button>
+      <button class="btn-confirm" onclick="saveUpdate()">업데이트</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Modal -->
+<div class="modal-overlay" id="statsModalOverlay">
+  <div class="modal stats-modal">
+    <h2>📊 전체 통계</h2>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="stats-section-title">상태별 분포</div>
+    <div id="statusDist"></div>
+    <div class="stats-section-title">카테고리별 진행도</div>
+    <div id="categoryDist"></div>
+    <div class="modal-btns">
+      <button class="btn-confirm" onclick="closeStatsModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading-mask" id="loadingMask">불러오는 중…</div>
+
+<script>
+/* ============================================================
+ *  CONFIG - 배포할 때 이 줄만 본인 Worker URL 로 바꾸면 됩니다.
+ * ============================================================ */
+const API_BASE = 'https://project-tracker-api.vodrnls41.workers.dev';
+
+const CACHE_KEY = 'tracker_cache_v1';
+const FILTER_KEY = 'tracker_filter_v1';
+const THEME_KEY  = 'tracker_theme_v1';   // 'light' | 'dark'
+
+const CAT_LABELS = { webapp:'웹앱', video:'영상/AI', tool:'툴/스크립트', mcp:'MCP/연동', channel:'채널/테스트' };
+const CAT_CSS    = { webapp:'cat-webapp', video:'cat-video', tool:'cat-tool', mcp:'cat-mcp', channel:'cat-channel' };
+const STATUS_LABELS = { todo:'시작 전', progress:'진행 중', test:'테스트 중', done:'완료', blocked:'블로킹' };
+const STATUS_CSS    = { todo:'badge-todo', progress:'badge-progress', test:'badge-test', done:'badge-done', blocked:'badge-blocked' };
+const BAR_COLORS = {
+  todo: '#c7c7cc', progress: '#ffc107', test: '#17a2b8', done: '#28a745', blocked: '#dc3545'
+};
+
+let projects = [];
+let editingId = null;
+let updatingId = null;
+
+// 필터 상태 (localStorage 에서 복원)
+const SORT_OPTIONS = new Set(['default', 'progress-desc', 'progress-asc', 'recent']);
+let filterState = (function() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FILTER_KEY) || 'null');
+    if (saved && typeof saved === 'object') {
+      return {
+        status:   saved.status   || 'all',
+        category: saved.category || 'all',
+        search:   typeof saved.search === 'string' ? saved.search : '',
+        sort:     SORT_OPTIONS.has(saved.sort) ? saved.sort : 'default',
+      };
+    }
+  } catch(e) {}
+  return { status: 'all', category: 'all', search: '', sort: 'default' };
+})();
+
+function saveFilterState() {
+  localStorage.setItem(FILTER_KEY, JSON.stringify(filterState));
+}
+
+// 마지막 업데이트 날짜(YYYY-MM-DD) 뽑기 — 최근 정렬용
+function lastUpdatedDate(p) {
+  if (Array.isArray(p.history) && p.history.length) {
+    // history 안에서 가장 큰 date 사용 (보통 마지막이지만 안전하게)
+    let max = '';
+    for (const h of p.history) {
+      if (h && typeof h.date === 'string' && h.date > max) max = h.date;
+    }
+    if (max) return max;
+  }
+  return p.createdAt || '';
+}
+
+function getFilteredProjects() {
+  const q = (filterState.search || '').trim().toLowerCase();
+
+  // 1) 필터링: status + category + 이름 검색
+  const filtered = projects.filter(p => {
+    if (filterState.status !== 'all') {
+      if (filterState.status === 'active') {
+        if (p.status !== 'progress' && p.status !== 'test') return false;
+      } else if (p.status !== filterState.status) return false;
+    }
+    if (filterState.category !== 'all' && p.category !== filterState.category) return false;
+    if (q) {
+      const name = (p.name || '').toLowerCase();
+      if (!name.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // 2) 정렬
+  if (filterState.sort === 'default') return filtered;
+
+  const copy = filtered.slice();
+  if (filterState.sort === 'progress-desc') {
+    copy.sort((a,b) => (b.pct||0) - (a.pct||0));
+  } else if (filterState.sort === 'progress-asc') {
+    copy.sort((a,b) => (a.pct||0) - (b.pct||0));
+  } else if (filterState.sort === 'recent') {
+    copy.sort((a,b) => {
+      const da = lastUpdatedDate(a);
+      const db = lastUpdatedDate(b);
+      if (da === db) return 0;
+      return da < db ? 1 : -1;   // 내림차순 (최근이 위)
+    });
+  }
+  return copy;
+}
+
+/* ---------- Theme (dark mode) ---------- */
+function applyTheme(theme) {
+  const isDark = theme === 'dark';
+  document.body.classList.toggle('dark', isDark);
+  const themeBtn = document.getElementById('themeBtn');
+  if (themeBtn) {
+    themeBtn.textContent = isDark ? '☀️' : '🌙';
+    themeBtn.setAttribute('aria-label', isDark ? '라이트모드로 전환' : '다크모드로 전환');
+    themeBtn.title = isDark ? '라이트모드로 전환' : '다크모드로 전환';
+  }
+  // theme-color 메타도 따라가게 (PWA 상태바 색)
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute('content', isDark ? '#000000' : '#f5f5f7');
+}
+function currentTheme() {
+  return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+}
+function toggleTheme() {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+// 첫 로딩 시 적용 (DOM 보다 먼저 body 클래스 잡기 위해 즉시 실행)
+applyTheme(currentTheme());
+
+/* ---------- Utility ---------- */
+function today() { return new Date().toISOString().slice(0,10); }
+function escapeHtml(s) {
+  return (s == null ? '' : String(s))
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function nl2br(s) { return escapeHtml(s).replace(/\n/g, '<br>'); }
+function showLoading(on) { document.getElementById('loadingMask').classList.toggle('show', on); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+function showError(msg, retryFn) {
+  const el = document.getElementById('errBanner');
+  el.innerHTML = escapeHtml(msg) + (retryFn ? ' <button id="retryBtn">다시 시도</button>' : '');
+  el.classList.add('show');
+  if (retryFn) document.getElementById('retryBtn').onclick = () => { hideError(); retryFn(); };
+}
+function hideError() { document.getElementById('errBanner').classList.remove('show'); }
+
+/* ---------- API ---------- */
+async function api(path, opts = {}) {
+  const res = await fetch(API_BASE + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+/* ---------- Load / Render ---------- */
+async function loadProjects() {
+  // Render cache immediately for snappy load
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (cached && Array.isArray(cached.projects)) {
+      projects = cached.projects;
+      render();
+    }
+  } catch (e) { /* ignore */ }
+
+  showLoading(true);
+  try {
+    const data = await api('/projects');
+    projects = data.projects || [];
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ projects, savedAt: Date.now() }));
+    hideError();
+    render();
+  } catch (err) {
+    console.error(err);
+    showError('Notion 에 연결하지 못했습니다: ' + err.message, loadProjects);
+  } finally {
+    showLoading(false);
+  }
+}
+
+function countByStatus(status) {
+  if (status === 'all') return projects.length;
+  if (status === 'active') return projects.filter(p => p.status === 'progress' || p.status === 'test').length;
+  return projects.filter(p => p.status === status).length;
+}
+function countByCategory(category) {
+  if (category === 'all') return projects.length;
+  return projects.filter(p => p.category === category).length;
+}
+
+function renderFilters() {
+  const STATUS_FILTERS = [
+    { key: 'all',      label: '전체' },
+    { key: 'active',   label: '진행 중' },   // progress + test 묶음
+    { key: 'todo',     label: '시작 전' },
+    { key: 'done',     label: '완료' },
+    { key: 'blocked',  label: '블로킹' },
+  ];
+  const CATEGORY_FILTERS = [
+    { key: 'all',     label: '모든 카테고리' },
+    { key: 'webapp',  label: '웹앱' },
+    { key: 'video',   label: '영상/AI' },
+    { key: 'tool',    label: '툴/스크립트' },
+    { key: 'mcp',     label: 'MCP/연동' },
+    { key: 'channel', label: '채널/테스트' },
+  ];
+
+  const statusEl = document.getElementById('statusFilters');
+  statusEl.innerHTML = STATUS_FILTERS.map(f => {
+    const cnt = countByStatus(f.key);
+    return `<button class="filter-chip${filterState.status === f.key ? ' active' : ''}"
+              data-filter="status" data-value="${f.key}">
+              ${f.label}<span class="count">${cnt}</span>
+            </button>`;
+  }).join('');
+
+  const catEl = document.getElementById('categoryFilters');
+  catEl.innerHTML = CATEGORY_FILTERS.map(f => {
+    const cnt = countByCategory(f.key);
+    if (cnt === 0 && f.key !== 'all') return ''; // 비어있는 카테고리는 숨김
+    return `<button class="filter-chip${filterState.category === f.key ? ' active' : ''}"
+              data-filter="category" data-value="${f.key}">
+              ${f.label}<span class="count">${cnt}</span>
+            </button>`;
+  }).join('');
+}
+
+function render() {
+  const d = new Date();
+  document.getElementById('subtitleDate').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 기준 · 총 ${projects.length}개 프로젝트`;
+
+  renderFilters();
+
+  const filtered = getFilteredProjects();
+  const container = document.getElementById('projectList');
+  container.innerHTML = '';
+
+  if (filtered.length === 0) {
+    const msg = (filterState.search && filterState.search.trim())
+      ? `"${escapeHtml(filterState.search.trim())}" 에 해당하는 프로젝트가 없어요.<br>다른 키워드로 검색해보세요.`
+      : `조건에 맞는 프로젝트가 없어요.<br>필터를 조정해보세요.`;
+    container.innerHTML = `<div class="empty-state">${msg}</div>`;
+    document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${today()}`;
+    return;
+  }
+
+  filtered.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.id = `card-${p.id}`;
+
+    const history = Array.isArray(p.history) && p.history.length ? p.history :
+      [{ v: p.version, date: p.createdAt || today(), note: '' }];
+    const latestDate = history[history.length-1]?.date || p.createdAt || '';
+    const historyHTML = history.slice().reverse().map(h => `
+      <div class="version-entry">
+        <span class="vtag">${escapeHtml(h.v)}</span>
+        <span class="vdate">${escapeHtml(h.date)}</span>
+        <span>${escapeHtml(h.note)}</span>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="project-header" data-toggle="${p.id}">
+        <div>
+          <div class="project-title-row">
+            <span class="project-title">${escapeHtml(p.name)}</span>
+            <span class="badge ${STATUS_CSS[p.status] || 'badge-todo'}">${STATUS_LABELS[p.status] || p.status}</span>
+            <span class="version-tag">${escapeHtml(p.version)} · ${escapeHtml(latestDate)}</span>
+            <span class="category-tag ${CAT_CSS[p.category] || ''}">${CAT_LABELS[p.category] || p.category}</span>
+          </div>
+        </div>
+        <span class="expand-icon">▾</span>
+      </div>
+      <div class="progress-row">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" style="width:${p.pct||0}%;background:${BAR_COLORS[p.status] || '#c7c7cc'}"></div>
+        </div>
+        <span class="progress-pct">${p.pct||0}%</span>
+      </div>
+      <div class="detail-section">
+        <div class="project-footer">
+          <div>
+            <div class="milestone-label">설명</div>
+            <div class="milestone-text">${nl2br(p.desc)}</div>
+            ${p.workspace ? `<div style="margin-top:6px;font-size:12px;color:var(--text-faint);">📁 ${escapeHtml(p.workspace)}</div>` : ''}
+          </div>
+          <div>
+            <div class="milestone-label">다음 할 일</div>
+            <div class="milestone-text">${nl2br(p.next)}</div>
+          </div>
+          <div class="version-history">
+            <div class="version-history-title">버전 히스토리</div>
+            ${historyHTML}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+            <button class="update-btn" data-action="update" data-id="${p.id}">📈 진행도 업데이트</button>
+            <button class="update-btn" data-action="edit" data-id="${p.id}">✏️ 편집</button>
+            <button class="update-btn" style="color:#dc3545" data-action="delete" data-id="${p.id}">🗑 삭제</button>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${today()}`;
+}
+
+/* ---------- Filter clicks ---------- */
+function handleFilterClick(e) {
+  const btn = e.target.closest('.filter-chip');
+  if (!btn) return;
+  const type = btn.dataset.filter;
+  const value = btn.dataset.value;
+  if (filterState[type] === value) return;
+  filterState[type] = value;
+  saveFilterState();
+  render();
+}
+document.getElementById('statusFilters').addEventListener('click', handleFilterClick);
+document.getElementById('categoryFilters').addEventListener('click', handleFilterClick);
+
+/* ---------- Chart button ---------- */
+document.getElementById('chartBtn').addEventListener('click', openStatsModal);
+
+/* ---------- Theme button ---------- */
+document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+
+/* ---------- Search + Sort ---------- */
+(function initToolsRow() {
+  const searchEl = document.getElementById('searchInput');
+  const sortEl   = document.getElementById('sortSelect');
+  // 복원
+  searchEl.value = filterState.search || '';
+  sortEl.value   = filterState.sort || 'default';
+  // 검색은 디바운스 (입력할 때마다 매번 render 하면 카드 깜빡임)
+  let searchTimer = null;
+  searchEl.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      filterState.search = searchEl.value;
+      saveFilterState();
+      render();
+    }, 120);
+  });
+  sortEl.addEventListener('change', () => {
+    filterState.sort = SORT_OPTIONS.has(sortEl.value) ? sortEl.value : 'default';
+    saveFilterState();
+    render();
+  });
+})();
+
+/* ---------- Event delegation ---------- */
+document.getElementById('projectList').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (btn) {
+    e.stopPropagation();
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'update') openUpdateModal(id);
+    else if (btn.dataset.action === 'edit') openEditModal(id);
+    else if (btn.dataset.action === 'delete') deleteProject(id);
+    return;
+  }
+  const header = e.target.closest('[data-toggle]');
+  if (header) toggleCard(header.dataset.toggle);
+});
+
+function toggleCard(id) {
+  const card = document.getElementById(`card-${id}`);
+  if (card) card.classList.toggle('expanded');
+}
+
+/* ---------- Add modal ---------- */
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '새 프로젝트 추가';
+  document.getElementById('mName').value = '';
+  document.getElementById('mCategory').value = 'webapp';
+  document.getElementById('mDesc').value = '';
+  document.getElementById('mPct').value = 0;
+  document.getElementById('mStatus').value = 'todo';
+  document.getElementById('mVersion').value = 'v0.1';
+  document.getElementById('mNext').value = '';
+  document.getElementById('mWorkspace').value = '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openEditModal(id) {
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '프로젝트 편집';
+  document.getElementById('mName').value = p.name || '';
+  document.getElementById('mCategory').value = p.category || 'webapp';
+  document.getElementById('mDesc').value = p.desc || '';
+  document.getElementById('mPct').value = p.pct || 0;
+  document.getElementById('mStatus').value = p.status || 'todo';
+  document.getElementById('mVersion').value = p.version || '';
+  document.getElementById('mNext').value = p.next || '';
+  document.getElementById('mWorkspace').value = p.workspace || '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function saveProject() {
+  const name = document.getElementById('mName').value.trim();
+  if (!name) return alert('프로젝트 이름을 입력해주세요.');
+  const payload = {
+    name,
+    category: document.getElementById('mCategory').value,
+    desc: document.getElementById('mDesc').value.trim(),
+    pct: parseInt(document.getElementById('mPct').value) || 0,
+    status: document.getElementById('mStatus').value,
+    version: document.getElementById('mVersion').value.trim() || 'v0.1',
+    next: document.getElementById('mNext').value.trim(),
+    workspace: document.getElementById('mWorkspace').value.trim(),
+  };
+
+  showLoading(true);
+  try {
+    if (editingId !== null) {
+      await api(`/projects/${encodeURIComponent(editingId)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      });
+      toast('저장됨');
+    } else {
+      payload.createdAt = today();
+      payload.order = (projects.reduce((m,p) => Math.max(m, p.order||0), 0) || projects.length) + 1;
+      await api('/projects', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      toast('추가됨');
+    }
+    closeModal();
+    await loadProjects();
+  } catch (err) {
+    alert('저장 실패: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+/* ---------- Update modal ---------- */
+function openUpdateModal(id) {
+  updatingId = id;
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('uPct').value = p.pct || 0;
+  document.getElementById('uStatus').value = p.status || 'todo';
+  document.getElementById('uVersion').value = p.version || '';
+  document.getElementById('uNext').value = p.next || '';
+  document.getElementById('uChangelog').value = '';
+  document.getElementById('updateModalOverlay').classList.add('open');
+}
+
+function closeUpdateModal() {
+  document.getElementById('updateModalOverlay').classList.remove('open');
+}
+
+async function saveUpdate() {
+  const p = projects.find(x => x.id === updatingId);
+  if (!p) return;
+  const newPct = parseInt(document.getElementById('uPct').value) || 0;
+  const newStatus = document.getElementById('uStatus').value;
+  const newVersion = document.getElementById('uVersion').value.trim() || p.version;
+  const newNext = document.getElementById('uNext').value.trim();
+  const changelog = document.getElementById('uChangelog').value.trim()
+    || (newVersion !== p.version ? `${p.version} → ${newVersion} 업데이트` : '');
+
+  const patch = {
+    pct: newPct,
+    status: newStatus,
+    version: newVersion,
+    next: newNext || p.next,
+  };
+
+  showLoading(true);
+  try {
+    await api(`/projects/${encodeURIComponent(updatingId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    });
+    if (changelog) {
+      await api('/history', {
+        method: 'POST',
+        body: JSON.stringify({
+          projectId: updatingId,
+          version: newVersion,
+          date: today(),
+          note: changelog,
+        }),
+      });
+    }
+    toast('업데이트 완료');
+    closeUpdateModal();
+    await loadProjects();
+    setTimeout(() => {
+      const card = document.getElementById(`card-${updatingId}`);
+      if (card) card.classList.add('expanded');
+    }, 50);
+  } catch (err) {
+    alert('업데이트 실패: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+/* ---------- Delete ---------- */
+async function deleteProject(id) {
+  if (!confirm('이 프로젝트를 삭제할까요? (Notion 에서 보관 처리됩니다)')) return;
+  showLoading(true);
+  try {
+    await api(`/projects/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    toast('삭제됨');
+    await loadProjects();
+  } catch (err) {
+    alert('삭제 실패: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+/* ---------- Stats modal ---------- */
+function openStatsModal() {
+  const counts = { todo:0, progress:0, test:0, done:0, blocked:0 };
+  projects.forEach(p => counts[p.status] = (counts[p.status] || 0) + 1);
+  const avgPct = projects.length ? Math.round(projects.reduce((s,p)=>s+(p.pct||0),0)/projects.length) : 0;
+  const totalActive = counts.progress + counts.test;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stats-card"><div class="num">${projects.length}</div><div class="label">전체 프로젝트</div></div>
+    <div class="stats-card"><div class="num">${totalActive}</div><div class="label">진행 중</div></div>
+    <div class="stats-card"><div class="num">${counts.done}</div><div class="label">완료</div></div>
+    <div class="stats-card"><div class="num">${avgPct}%</div><div class="label">평균 진행도</div></div>
+  `;
+
+  // 상태별 분포 막대
+  const STATUS_ITEMS = [
+    { key: 'todo',     label: '시작 전',   color: '#c7c7cc' },
+    { key: 'progress', label: '진행 중',   color: '#ffc107' },
+    { key: 'test',     label: '테스트 중', color: '#17a2b8' },
+    { key: 'done',     label: '완료',      color: '#28a745' },
+    { key: 'blocked',  label: '블로킹',    color: '#dc3545' },
+  ];
+  const maxStatus = Math.max(1, ...STATUS_ITEMS.map(s => counts[s.key] || 0));
+  document.getElementById('statusDist').innerHTML = STATUS_ITEMS.map(s => {
+    const cnt = counts[s.key] || 0;
+    const pct = (cnt / maxStatus) * 100;
+    return `
+      <div class="dist-row">
+        <span class="dist-label">${s.label}</span>
+        <div class="dist-bar-bg">
+          <div class="dist-bar-fill" style="width:${pct}%;background:${s.color}"></div>
+        </div>
+        <span class="dist-count">${cnt}</span>
+      </div>
+    `;
+  }).join('');
+
+  // 카테고리별 평균 진행도
+  const CAT_ITEMS = [
+    { key: 'webapp',  label: '웹앱',        color: '#0055cc' },
+    { key: 'video',   label: '영상/AI',     color: '#7700aa' },
+    { key: 'tool',    label: '툴/스크립트', color: '#006633' },
+    { key: 'mcp',     label: 'MCP/연동',    color: '#cc6600' },
+    { key: 'channel', label: '채널/테스트', color: '#b5003a' },
+  ];
+  document.getElementById('categoryDist').innerHTML = CAT_ITEMS.map(c => {
+    const items = projects.filter(p => p.category === c.key);
+    if (!items.length) return '';
+    const avg = Math.round(items.reduce((s,p) => s + (p.pct||0), 0) / items.length);
+    return `
+      <div class="dist-row">
+        <span class="dist-label">${c.label}</span>
+        <div class="dist-bar-bg">
+          <div class="dist-bar-fill" style="width:${avg}%;background:${c.color}"></div>
+        </div>
+        <span class="dist-count">${avg}%</span>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('statsModalOverlay').classList.add('open');
+}
+
+function closeStatsModal() {
+  document.getElementById('statsModalOverlay').classList.remove('open');
+}
+
+/* ---------- Modal background close ---------- */
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => {
+    if (e.target === ov) ov.classList.remove('open');
+  });
+});
+
+/* ---------- Service worker for PWA ---------- */
+if ('serviceWorker' in navigator) {
+  let reloading = false;
+  // 새 SW 가 활성화되면(controllerchange) 페이지 자동 새로고침 (한 번만)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // 1시간마다, 그리고 페이지 포커스 받을 때 SW 업데이트 체크
+      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    }).catch(() => {});
+  });
+}
+
+/* ---------- Boot ---------- */
+loadProjects();
+</script>
+</body>
+</html>
