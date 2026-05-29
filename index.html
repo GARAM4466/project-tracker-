@@ -1311,11 +1311,7 @@ function closeStatsModal() {
 }
 
 /* ---------- Modal background close ---------- */
-document.querySelectorAll('.modal-overlay').forEach(ov => {
-  ov.addEventListener('click', e => {
-    if (e.target === ov) ov.classList.remove('open');
-  });
-});
+/* 바깥 클릭으로 모달 닫기 비활성화 — 작성 중 실수 방지 */
 
 /* ---------- Service worker for PWA ---------- */
 if ('serviceWorker' in navigator) {
